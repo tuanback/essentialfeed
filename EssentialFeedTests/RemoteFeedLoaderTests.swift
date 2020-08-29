@@ -75,14 +75,19 @@ class RemoteFeedLoaderTests: XCTestCase {
   func test_load_deliversItemsOn200HTTPResponseWithJSONItems() {
     let (sut, client) = makeSUT()
     
-    let (item1, item1JSON) = makeItem(id: UUID(), imageURL: URL(string: "http://a.com")!)
+    let (item1, item1JSON) = makeItem(
+      id: UUID(),
+      imageURL: URL(string: "http://a.com")!
+    )
     
-    let (item2, item2JSON) = makeItem(id: UUID(), description: "a description", location: "a location", imageURL: URL(string: "http://b.com")!)
-    
-    let itemsJSON = ["items": [item1JSON, item2JSON]]
+    let (item2, item2JSON) = makeItem(
+      id: UUID(),
+      description: "a description",
+      location: "a location",
+      imageURL: URL(string: "http://b.com")!)
     
     expect(sut, toCompleteWith: .success([item1, item2]), when: {
-      let json = try! JSONSerialization.data(withJSONObject: itemsJSON)
+      let json = makeItemsJSON([item1JSON, item2JSON])
       client.complete(withStatusCode: 200, data: json)
     })
   }
@@ -105,6 +110,12 @@ class RemoteFeedLoaderTests: XCTestCase {
       ].compactMapValues { $0 }
     
     return (item, itemJSON)
+  }
+  
+  private func makeItemsJSON(_ items: [[String: Any]]) -> Data {
+    let itemsJSON = ["items": items]
+    let json = try! JSONSerialization.data(withJSONObject: itemsJSON)
+    return json
   }
   
   private func expect(_ sut: RemoteFeedLoader, toCompleteWith result: Result<[FeedItem], RemoteFeedLoader.Error>, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
