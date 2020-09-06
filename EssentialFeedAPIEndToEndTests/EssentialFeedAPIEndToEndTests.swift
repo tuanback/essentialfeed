@@ -12,6 +12,17 @@ import EssentialFeed
 class EssentialFeedAPIEndToEndTests: XCTestCase {
 
   func test_endToEndTestServerGetFeedResult_matchesFixedTestAccoutData() {
+    switch getResult() {
+    case let .success(items):
+      XCTAssertEqual(items.count, 8)
+    case let .failure(error):
+      XCTFail("Expected successfully feed result, got \(error) instead")
+    default:
+      XCTFail("Expected successful feed result, got no result instead")
+    }
+  }
+
+  private func getResult() -> Result<[FeedItem], Error>? {
     let url = URL(string: "https://essentialdeveloper.com/feed-case-study/test-api/feed")!
     let client = URLSessionHTTPClient()
     let loader = RemoteFeedLoader(url: url, client: client)
@@ -25,15 +36,7 @@ class EssentialFeedAPIEndToEndTests: XCTestCase {
     }
     
     wait(for: [exp], timeout: 8.0)
-    
-    switch receivedResult {
-    case let .success(items):
-      XCTAssertEqual(items.count, 8)
-    case let .failure(error):
-      XCTFail("Expected successfully feed result, got \(error) instead")
-    default:
-      XCTFail("Expected successful feed result, got no result instead")
-    }
+    return receivedResult
   }
-
+  
 }
