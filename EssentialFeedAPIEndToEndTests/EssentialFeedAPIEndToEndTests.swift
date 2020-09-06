@@ -10,7 +10,6 @@ import XCTest
 import EssentialFeed
 
 class EssentialFeedAPIEndToEndTests: XCTestCase {
-
   func test_endToEndTestServerGetFeedResult_matchesFixedTestAccoutData() {
     switch getResult() {
     case let .success(items):
@@ -24,7 +23,7 @@ class EssentialFeedAPIEndToEndTests: XCTestCase {
 
   private func getResult() -> Result<[FeedItem], Error>? {
     let url = URL(string: "https://essentialdeveloper.com/feed-case-study/test-api/feed")!
-    let client = URLSessionHTTPClient()
+    let client = URLSessionHTTPClient(session: URLSession(configuration: .ephemeral))
     let loader = RemoteFeedLoader(url: url, client: client)
     
     let exp = expectation(description: "Wait for load completion")
