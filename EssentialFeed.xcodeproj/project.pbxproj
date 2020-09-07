@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1704990F250655C90087179B /* Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1704990E250655C90087179B /* Tests.swift */; };
 		175FB96424F3E5F100C91917 /* EssentialFeed.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 175FB95A24F3E5F000C91917 /* EssentialFeed.framework */; };
 		175FB96924F3E5F100C91917 /* EssentialFeedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 175FB96824F3E5F100C91917 /* EssentialFeedTests.swift */; };
 		175FB96B24F3E5F100C91917 /* EssentialFeed.h in Headers */ = {isa = PBXBuildFile; fileRef = 175FB95D24F3E5F000C91917 /* EssentialFeed.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -41,6 +42,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1704990E250655C90087179B /* Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Tests.swift; path = EssentialFeedTests/FeedCache/Tests.swift; sourceTree = "<group>"; };
 		175FB95A24F3E5F000C91917 /* EssentialFeed.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = EssentialFeed.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		175FB95D24F3E5F000C91917 /* EssentialFeed.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EssentialFeed.h; sourceTree = "<group>"; };
 		175FB95E24F3E5F000C91917 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -88,9 +90,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		17267DC82506551100E2C44A /* FeedCache */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = FeedCache;
+			sourceTree = "<group>";
+		};
 		175FB95024F3E5F000C91917 = {
 			isa = PBXGroup;
 			children = (
+				1704990E250655C90087179B /* Tests.swift */,
 				175FB95C24F3E5F000C91917 /* EssentialFeed */,
 				175FB96724F3E5F100C91917 /* EssentialFeedTests */,
 				175FB9992501966C00C91917 /* EssentialFeedAPIEndToEndTests */,
@@ -122,6 +132,7 @@
 		175FB96724F3E5F100C91917 /* EssentialFeedTests */ = {
 			isa = PBXGroup;
 			children = (
+				17267DC82506551100E2C44A /* FeedCache */,
 				175FB96824F3E5F100C91917 /* EssentialFeedTests.swift */,
 				175FB96A24F3E5F100C91917 /* Info.plist */,
 				175FB98124FA2E7F00C91917 /* FeedAPI */,
@@ -330,6 +341,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				175FB97924F3F2AF00C91917 /* RemoteFeedLoaderTests.swift in Sources */,
+				1704990F250655C90087179B /* Tests.swift in Sources */,
 				175FB98424FB2FB700C91917 /* URLSessionHTTPClientTests.swift in Sources */,
 				175FB98724FD9D5200C91917 /* XCTTestCase+MemoryLeakTracking.swift in Sources */,
 				175FB96924F3E5F100C91917 /* EssentialFeedTests.swift in Sources */,
