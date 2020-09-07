@@ -42,7 +42,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		1704990E250655C90087179B /* Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Tests.swift; path = EssentialFeedTests/FeedCache/Tests.swift; sourceTree = "<group>"; };
+		1704990E250655C90087179B /* Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests.swift; sourceTree = "<group>"; };
 		175FB95A24F3E5F000C91917 /* EssentialFeed.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = EssentialFeed.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		175FB95D24F3E5F000C91917 /* EssentialFeed.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EssentialFeed.h; sourceTree = "<group>"; };
 		175FB95E24F3E5F000C91917 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -93,6 +93,7 @@
 		17267DC82506551100E2C44A /* FeedCache */ = {
 			isa = PBXGroup;
 			children = (
+				1704990E250655C90087179B /* Tests.swift */,
 			);
 			path = FeedCache;
 			sourceTree = "<group>";
@@ -100,7 +101,6 @@
 		175FB95024F3E5F000C91917 = {
 			isa = PBXGroup;
 			children = (
-				1704990E250655C90087179B /* Tests.swift */,
 				175FB95C24F3E5F000C91917 /* EssentialFeed */,
 				175FB96724F3E5F100C91917 /* EssentialFeedTests */,
 				175FB9992501966C00C91917 /* EssentialFeedAPIEndToEndTests */,
@@ -132,6 +132,7 @@
 		175FB96724F3E5F100C91917 /* EssentialFeedTests */ = {
 			isa = PBXGroup;
 			children = (
+				175FB98524FD9D3000C91917 /* Helpers */,
 				17267DC82506551100E2C44A /* FeedCache */,
 				175FB96824F3E5F100C91917 /* EssentialFeedTests.swift */,
 				175FB96A24F3E5F100C91917 /* Info.plist */,
@@ -154,7 +155,6 @@
 		175FB98124FA2E7F00C91917 /* FeedAPI */ = {
 			isa = PBXGroup;
 			children = (
-				175FB98524FD9D3000C91917 /* Helpers */,
 				175FB97824F3F2AF00C91917 /* RemoteFeedLoaderTests.swift */,
 				175FB98324FB2FB700C91917 /* URLSessionHTTPClientTests.swift */,
 			);
