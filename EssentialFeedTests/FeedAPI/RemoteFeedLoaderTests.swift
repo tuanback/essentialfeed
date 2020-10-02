@@ -98,7 +98,7 @@ class LoadFeedFromRemoteUseCaseTests: XCTestCase {
     let client = HTTPClientSpy()
     var sut: RemoteFeedLoader? = RemoteFeedLoader(url: url, client: client)
     
-    var capturedResults = [Result<[FeedItem], Error>]()
+    var capturedResults = [Result<[FeedImage], Error>]()
     sut?.load { capturedResults.append($0) }
     
     sut = nil
@@ -108,7 +108,7 @@ class LoadFeedFromRemoteUseCaseTests: XCTestCase {
   }
   
   // MARK: - Helpers
-  private func failure(_ error: RemoteFeedLoader.Error) -> Result<[FeedItem], Error> {
+  private func failure(_ error: RemoteFeedLoader.Error) -> Result<[FeedImage], Error> {
     return .failure(error)
   }
   
@@ -120,14 +120,14 @@ class LoadFeedFromRemoteUseCaseTests: XCTestCase {
     return (sut, client)
   }
   
-  private func makeItem(id: UUID, description: String? = nil, location: String? = nil, imageURL: URL) -> (model: FeedItem, json: [String: Any]) {
-    let item = FeedItem(id: id, description: description, location: location, imageURL: imageURL)
+  private func makeItem(id: UUID, description: String? = nil, location: String? = nil, imageURL: URL) -> (model: FeedImage, json: [String: Any]) {
+    let item = FeedImage(id: id, description: description, location: location, url: imageURL)
     
     let itemJSON = [
       "id": item.id.uuidString,
       "description": item.description,
       "location": item.location,
-      "image": item.imageURL.absoluteString
+      "image": item.url.absoluteString
       ].compactMapValues { $0 }
     
     return (item, itemJSON)
@@ -139,7 +139,7 @@ class LoadFeedFromRemoteUseCaseTests: XCTestCase {
     return json
   }
   
-  private func expect(_ sut: RemoteFeedLoader, toCompleteWith expectedResult: Result<[FeedItem], Error>, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
+  private func expect(_ sut: RemoteFeedLoader, toCompleteWith expectedResult: Result<[FeedImage], Error>, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
     
     let exp = expectation(description: "Wait for load completion")
     

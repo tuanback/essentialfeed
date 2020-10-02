@@ -21,14 +21,14 @@ class EssentialFeedAPIEndToEndTests: XCTestCase {
     }
   }
 
-  private func getResult() -> Result<[FeedItem], Error>? {
+  private func getResult() -> Result<[FeedImage], Error>? {
     let url = URL(string: "https://essentialdeveloper.com/feed-case-study/test-api/feed")!
     let client = URLSessionHTTPClient(session: URLSession(configuration: .ephemeral))
     let loader = RemoteFeedLoader(url: url, client: client)
     
     let exp = expectation(description: "Wait for load completion")
     
-    var receivedResult: Result<[FeedItem], Error>?
+    var receivedResult: Result<[FeedImage], Error>?
     loader.load { (result) in
       receivedResult = result
       exp.fulfill()
