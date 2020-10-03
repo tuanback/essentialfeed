@@ -32,8 +32,26 @@ public class LocalFeedLoader {
     }
   }
   
-  public func load() {
-    store.retrieve()
+  public func load(completion: @escaping (Result<[FeedImage], Error>) -> (Void)) {
+    store.retrieve { [weak self] result in
+      guard let strongSelf = self else { return }
+      switch result {
+      case let .found(localFeedImages, timestamp) where strongSelf.validate(timestamp):
+        completion(.success(localFeedImages.toModels()))
+      case .empty, .found:
+        completion(.success([]))
+      case let .failure(error):
+        completion(.failure(error))
+      }
+    }
+  }
+ 
+  private func validate(_ timestamp: Date) -> Bool {
+    let calendar = Calendar(identifier: .gregorian)
+    guard let maxCacheAge = calendar.date(byAdding: .day, value: 7, to: timestamp) else {
+      return false
+    }
+    return currentDate() < maxCacheAge
   }
   
   private func cache(_ items: [FeedImage], with completion: @escaping (SaveResult) -> Void) {
@@ -47,5 +65,11 @@ public class LocalFeedLoader {
 private extension Array where Element == FeedImage {
   func toLocal() -> [LocalFeedImage] {
     return map { LocalFeedImage(id: $0.id, description: $0.description, location: $0.location, url: $0.url) }
+  }
+}
+
+private extension Array where Element == LocalFeedImage {
+  func toModels() -> [FeedImage] {
+    return map { FeedImage(id: $0.id, description: $0.description, location: $0.location, url: $0.url) }
   }
 }

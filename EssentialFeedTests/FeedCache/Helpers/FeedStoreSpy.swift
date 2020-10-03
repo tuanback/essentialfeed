@@ -12,6 +12,7 @@ import EssentialFeed
 class FeedStoreSpy: FeedStore {
   typealias DeletionCompletion = (Error?) -> Void
   typealias InsertionCompletion = (Error?) -> Void
+  typealias RetrieveCompletion = (RetrieveCachedFeedResult) -> Void
   
   enum ReceivedMessage: Equatable {
     case deleteCachedFeed
@@ -23,6 +24,7 @@ class FeedStoreSpy: FeedStore {
   
   private var deletionCompletions = [DeletionCompletion]()
   private var insertionCompletions = [InsertionCompletion]()
+  private var retrieveCompletions = [RetrieveCompletion]()
   
   func deleteCachedFeed(completion: @escaping DeletionCompletion) {
     deletionCompletions.append(completion)
@@ -34,7 +36,8 @@ class FeedStoreSpy: FeedStore {
     receivedMessages.append(.insert(items, timestamp))
   }
   
-  func retrieve() {
+  func retrieve(completion: @escaping RetrieveCompletion) {
+    retrieveCompletions.append(completion)
     receivedMessages.append(.retrieve)
   }
   
@@ -52,5 +55,17 @@ class FeedStoreSpy: FeedStore {
   
   func completeInsertionSuccessfully(at index: Int = 0) {
     insertionCompletions[index](nil)
+  }
+  
+  func completeRetrieve(with error: Error, at index: Int = 0) {
+    retrieveCompletions[index](.failure(error: error))
+  }
+  
+  func completeRetrieveWithEmptyCache(at index: Int = 0) {
+    retrieveCompletions[index](.empty)
+  }
+  
+  func completeRetrieveSuccessfully(items: [LocalFeedImage], timestamp: Date, at index: Int = 0) {
+    retrieveCompletions[index](.found(feed: items, timestamp: timestamp))
   }
 }
