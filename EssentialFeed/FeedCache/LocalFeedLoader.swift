@@ -8,16 +8,33 @@
 
 import Foundation
 
-public class LocalFeedLoader {
-  
-  private var store: FeedStore
+private final class FeedCachePolicy {
   private let currentDate: () -> Date
   private let calendar = Calendar(identifier: .gregorian)
   private let maxCacheAgeInDays: Int = 7
   
+  init(currentDate: @escaping () -> Date) {
+    self.currentDate = currentDate
+  }
+  
+  func validate(_ timestamp: Date) -> Bool {
+    guard let maxCacheAge = calendar.date(byAdding: .day, value: maxCacheAgeInDays, to: timestamp) else {
+      return false
+    }
+    return currentDate() < maxCacheAge
+  }
+}
+
+public class LocalFeedLoader {
+  
+  private var store: FeedStore
+  private let currentDate: () -> Date
+  private let cachePolicy: FeedCachePolicy
+  
   public init(store: FeedStore, currentDate: @escaping () -> Date) {
     self.store = store
     self.currentDate = currentDate
+    self.cachePolicy = FeedCachePolicy(currentDate: currentDate)
   }
 }
 
@@ -49,7 +66,7 @@ extension LocalFeedLoader: FeedLoader {
     store.retrieve { [weak self] result in
       guard let strongSelf = self else { return }
       switch result {
-      case let .found(localFeedImages, timestamp) where strongSelf.validate(timestamp):
+      case let .found(localFeedImages, timestamp) where strongSelf.cachePolicy.validate(timestamp):
         completion(.success(localFeedImages.toModels()))
       case .found, .empty:
         completion(.success([]))
@@ -65,7 +82,7 @@ extension LocalFeedLoader {
     store.retrieve { [weak self] result in
       guard let strongSelf = self else { return }
       switch result {
-      case let .found(_, timestamp) where strongSelf.validate(timestamp):
+      case let .found(_, timestamp) where strongSelf.cachePolicy.validate(timestamp):
         break
       case .found:
         self?.store.deleteCachedFeed { _ in }
@@ -75,13 +92,6 @@ extension LocalFeedLoader {
         self?.store.deleteCachedFeed { _ in }
       }
     }
-  }
-  
-  private func validate(_ timestamp: Date) -> Bool {
-    guard let maxCacheAge = calendar.date(byAdding: .day, value: maxCacheAgeInDays, to: timestamp) else {
-      return false
-    }
-    return currentDate() < maxCacheAge
   }
 }
 
