@@ -9,19 +9,14 @@
 import Foundation
 
 private final class FeedCachePolicy {
-  private let currentDate: () -> Date
   private let calendar = Calendar(identifier: .gregorian)
   private let maxCacheAgeInDays: Int = 7
   
-  init(currentDate: @escaping () -> Date) {
-    self.currentDate = currentDate
-  }
-  
-  func validate(_ timestamp: Date) -> Bool {
+  func validate(_ timestamp: Date, against date: Date) -> Bool {
     guard let maxCacheAge = calendar.date(byAdding: .day, value: maxCacheAgeInDays, to: timestamp) else {
       return false
     }
-    return currentDate() < maxCacheAge
+    return date < maxCacheAge
   }
 }
 
@@ -34,7 +29,7 @@ public class LocalFeedLoader {
   public init(store: FeedStore, currentDate: @escaping () -> Date) {
     self.store = store
     self.currentDate = currentDate
-    self.cachePolicy = FeedCachePolicy(currentDate: currentDate)
+    self.cachePolicy = FeedCachePolicy()
   }
 }
 
@@ -66,7 +61,7 @@ extension LocalFeedLoader: FeedLoader {
     store.retrieve { [weak self] result in
       guard let strongSelf = self else { return }
       switch result {
-      case let .found(localFeedImages, timestamp) where strongSelf.cachePolicy.validate(timestamp):
+      case let .found(localFeedImages, timestamp) where strongSelf.cachePolicy.validate(timestamp, against: strongSelf.currentDate()):
         completion(.success(localFeedImages.toModels()))
       case .found, .empty:
         completion(.success([]))
@@ -82,7 +77,7 @@ extension LocalFeedLoader {
     store.retrieve { [weak self] result in
       guard let strongSelf = self else { return }
       switch result {
-      case let .found(_, timestamp) where strongSelf.cachePolicy.validate(timestamp):
+      case let .found(_, timestamp) where strongSelf.cachePolicy.validate(timestamp, against: strongSelf.currentDate()):
         break
       case .found:
         self?.store.deleteCachedFeed { _ in }
