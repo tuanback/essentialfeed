@@ -26,6 +26,55 @@ class ValidateFeedCacheUseCaseTests: XCTestCase {
     XCTAssertEqual(store.receivedMessages, [.retrieve, .deleteCachedFeed])
   }
   
+  func test_validateCache_doesNotDeleteCacheOnEmptyCache() {
+    let (sut, store) = makeSUT()
+    
+    sut.validateCache()
+    
+    store.completeRetrieveWithEmptyCache()
+    
+    XCTAssertEqual(store.receivedMessages, [.retrieve])
+  }
+  
+  func test_validateCache_doesNotDeleteOnLessThenSevenDaysOldCache() {
+    let items = uniqueItems()
+    let fixedCurrentDate = Date()
+    let lessThanSevenDaysOldTimestamp = fixedCurrentDate.adding(days: -7).adding(seconds: 1)
+    let (sut, store) = makeSUT(currentDate: { fixedCurrentDate })
+    
+    sut.validateCache()
+    
+    store.completeRetrieveSuccessfully(items: items.local, timestamp: lessThanSevenDaysOldTimestamp)
+    
+    XCTAssertEqual(store.receivedMessages, [.retrieve])
+  }
+  
+  func test_validateCache_deleteCacheOnSevenDaysOldCache() {
+    let items = uniqueItems()
+    let fixedCurrentDate = Date()
+    let sevenDaysOldTimestamp = fixedCurrentDate.adding(days: -7)
+    let (sut, store) = makeSUT(currentDate: { fixedCurrentDate })
+    
+    sut.validateCache()
+    
+    store.completeRetrieveSuccessfully(items: items.local, timestamp: sevenDaysOldTimestamp)
+    
+    XCTAssertEqual(store.receivedMessages, [.retrieve, .deleteCachedFeed])
+  }
+  
+  func test_validateCache_deleteCacheOnMoreThanSevenDaysOldCache() {
+    let items = uniqueItems()
+    let fixedCurrentDate = Date()
+    let moreThanSevenDaysOldTimestamp = fixedCurrentDate.adding(days: -7).adding(seconds: -1)
+    let (sut, store) = makeSUT(currentDate: { fixedCurrentDate })
+    
+    sut.validateCache()
+    
+    store.completeRetrieveSuccessfully(items: items.local, timestamp: moreThanSevenDaysOldTimestamp)
+    
+    XCTAssertEqual(store.receivedMessages, [.retrieve, .deleteCachedFeed])
+  }
+  
   // MARK: - Helpers
   
   private func makeSUT(currentDate: @escaping () -> (Date) = Date.init, file: StaticString = #file, line: UInt = #line) -> (sut: LocalFeedLoader, store: FeedStoreSpy) {
@@ -35,23 +84,5 @@ class ValidateFeedCacheUseCaseTests: XCTestCase {
     trackForMemoryLeaks(store, file: file, line: line)
     trackForMemoryLeaks(sut, file: file, line: line)
     return (sut, store)
-  }
-  
-  private func uniqueItem() -> FeedImage {
-    return FeedImage(id: UUID(), description: "any", location: "any", url: anyURL())
-  }
-  
-  private func uniqueItems() -> (models: [FeedImage], local: [LocalFeedImage]) {
-    let models = [uniqueItem(), uniqueItem()]
-    let local = models.map { LocalFeedImage(id: $0.id, description: $0.description, location: $0.location, url: $0.url) }
-    return (models, local)
-  }
-  
-  private func anyURL() -> URL {
-    return URL(string: "any-url.com")!
-  }
-  
-  private func anyNSError() -> NSError {
-    return NSError(domain: "any error", code: 1)
   }
 }

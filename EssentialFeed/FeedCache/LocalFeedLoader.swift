@@ -40,7 +40,6 @@ public class LocalFeedLoader {
       case let .found(localFeedImages, timestamp) where strongSelf.validate(timestamp):
         completion(.success(localFeedImages.toModels()))
       case .found:
-        self?.store.deleteCachedFeed { _ in }
         completion(.success([]))
       case .empty:
         completion(.success([]))
@@ -51,8 +50,19 @@ public class LocalFeedLoader {
   }
   
   public func validateCache() {
-    store.retrieve { (_) in }
-    store.deleteCachedFeed { _ in }
+    store.retrieve { [weak self] result in
+      guard let strongSelf = self else { return }
+      switch result {
+      case let .found(_, timestamp) where strongSelf.validate(timestamp):
+        break
+      case .found:
+        self?.store.deleteCachedFeed { _ in }
+      case .empty:
+        break
+      case .failure(_):
+        self?.store.deleteCachedFeed { _ in }
+      }
+    }
   }
  
   private let maxCacheAgeInDays: Int = 7

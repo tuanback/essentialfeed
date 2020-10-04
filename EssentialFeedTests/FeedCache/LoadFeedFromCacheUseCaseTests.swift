@@ -83,7 +83,7 @@ class LoadFeedFromCacheUseCaseTests: XCTestCase {
     XCTAssertEqual(store.receivedMessages, [.retrieve])
   }
   
-  func test_load_doesNotDeleteCacheOnEmptyCache() {
+  func test_load_hasNoSideEffectOnEmptyCache() {
     let (sut, store) = makeSUT()
     
     sut.load { _ in }
@@ -93,7 +93,7 @@ class LoadFeedFromCacheUseCaseTests: XCTestCase {
     XCTAssertEqual(store.receivedMessages, [.retrieve])
   }
   
-  func test_load_doesNotDeleteCacheOnLessThenSevenDaysOldCache() {
+  func test_load_hasNoSideEffectOnLessThenSevenDaysOldCache() {
     let items = uniqueItems()
     let fixedCurrentDate = Date()
     let lessThanSevenDaysOldTimestamp = fixedCurrentDate.adding(days: -7).adding(seconds: 1)
@@ -106,7 +106,7 @@ class LoadFeedFromCacheUseCaseTests: XCTestCase {
     XCTAssertEqual(store.receivedMessages, [.retrieve])
   }
   
-  func test_load_deleteCacheOnSevenDaysOldCache() {
+  func test_load_hasNoSideEffectOnSevenDaysOldCache() {
     let items = uniqueItems()
     let fixedCurrentDate = Date()
     let sevenDaysOldTimestamp = fixedCurrentDate.adding(days: -7)
@@ -116,10 +116,10 @@ class LoadFeedFromCacheUseCaseTests: XCTestCase {
     
     store.completeRetrieveSuccessfully(items: items.local, timestamp: sevenDaysOldTimestamp)
     
-    XCTAssertEqual(store.receivedMessages, [.retrieve, .deleteCachedFeed])
+    XCTAssertEqual(store.receivedMessages, [.retrieve])
   }
   
-  func test_load_deleteCacheOnMoreThanSevenDaysOldCache() {
+  func test_load_hasNoSideEffectOnMoreThanSevenDaysOldCache() {
     let items = uniqueItems()
     let fixedCurrentDate = Date()
     let moreThanSevenDaysOldTimestamp = fixedCurrentDate.adding(days: -7).adding(seconds: -1)
@@ -129,7 +129,7 @@ class LoadFeedFromCacheUseCaseTests: XCTestCase {
     
     store.completeRetrieveSuccessfully(items: items.local, timestamp: moreThanSevenDaysOldTimestamp)
     
-    XCTAssertEqual(store.receivedMessages, [.retrieve, .deleteCachedFeed])
+    XCTAssertEqual(store.receivedMessages, [.retrieve])
   }
   
   func test_load_doesNotDeliverResultAfterSUTInstanceHasBeenDeallocated() {
@@ -175,34 +175,5 @@ class LoadFeedFromCacheUseCaseTests: XCTestCase {
     action()
     
     wait(for: [exp], timeout: 1.0)
-  }
-  
-  private func uniqueItem() -> FeedImage {
-    return FeedImage(id: UUID(), description: "any", location: "any", url: anyURL())
-  }
-  
-  private func uniqueItems() -> (models: [FeedImage], local: [LocalFeedImage]) {
-    let models = [uniqueItem(), uniqueItem()]
-    let local = models.map { LocalFeedImage(id: $0.id, description: $0.description, location: $0.location, url: $0.url) }
-    return (models, local)
-  }
-  
-  private func anyURL() -> URL {
-    return URL(string: "any-url.com")!
-  }
-  
-  private func anyNSError() -> NSError {
-    return NSError(domain: "any error", code: 1)
-  }
-  
-}
-
-private extension Date {
-  func adding(days: Int) -> Date {
-    return Calendar(identifier: .gregorian).date(byAdding: .day, value: days, to: self)!
-  }
-  
-  func adding(seconds: Int) -> Date {
-    return self + TimeInterval(seconds)
   }
 }
