@@ -37,7 +37,11 @@ class CodableFeedStore {
     }
   }
   
-  private let storeURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent("image-feed.store")
+  private let storeURL: URL
+  init(storeURL: URL) {
+    self.storeURL = storeURL
+  }
+  
   func retrieve(completion: @escaping FeedStore.RetrieveCompletion) {
     guard let data = try? Data(contentsOf: storeURL) else {
       completion(.empty)
@@ -59,20 +63,22 @@ class CodableFeedStore {
 
 class CodableFeedStoreTests: XCTestCase {
   
-  override class func setUp() {
-    let storeURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent("image-feed.store")
-    try? FileManager.default.removeItem(at: storeURL)
+  private let storeURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent("image-feed.store")
+  
+  override func setUp() {
     super.setUp()
+    
+    try? FileManager.default.removeItem(at: storeURL)
   }
   
-  override class func tearDown() {
-    let storeURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent("image-feed.store")
-    try? FileManager.default.removeItem(at: storeURL)
+  override func tearDown() {
     super.tearDown()
+    
+    try? FileManager.default.removeItem(at: storeURL)
   }
   
   func test_retrieve_deliversEmptyOnEmptyCache() {
-    let sut = CodableFeedStore()
+    let sut = makeSUT()
     let exp = expectation(description: "Wait for cache retrieve completed")
     
     sut.retrieve { result in
@@ -90,7 +96,7 @@ class CodableFeedStoreTests: XCTestCase {
   }
   
   func test_retrieve_hasNoSideEffectOnEmptyCache() {
-    let sut = CodableFeedStore()
+    let sut = makeSUT()
     let exp = expectation(description: "Wait for cache retrieve completed")
     
     sut.retrieve { firstResult in
@@ -110,7 +116,7 @@ class CodableFeedStoreTests: XCTestCase {
   }
   
   func test_retrieveAfterInsertingToEmptyCache_deliversInsertedValues() {
-    let sut = CodableFeedStore()
+    let sut = makeSUT()
     let feed = uniqueItems().local
     let timestamp = Date()
     let exp = expectation(description: "Wait for cache retrieve completed")
@@ -132,6 +138,13 @@ class CodableFeedStoreTests: XCTestCase {
     }
     
     wait(for: [exp], timeout: 1.0)
+  }
+  
+  // MARK: Helpers
+  private func makeSUT() -> CodableFeedStore {
+    let sut = CodableFeedStore(storeURL: storeURL)
+    trackForMemoryLeaks(sut)
+    return sut
   }
   
 }
