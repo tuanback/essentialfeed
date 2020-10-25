@@ -15,16 +15,26 @@ class CodableFeedStore {
     let timestamp: Date
   }
   
-  private let storeURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent("image-feed.store")
+  private let storeURL: URL
+  
+  init(storeURL: URL) {
+    self.storeURL = storeURL
+  }
+  
   func retrieve(completion: @escaping FeedStore.RetrieveCompletion) {
     guard let data = try? Data(contentsOf: storeURL) else {
       completion(.empty)
       return
     }
     
-    let decoder = JSONDecoder()
-    let cache = try! decoder.decode(Cache.self, from: data)
-    completion(.found(feed: cache.feed, timestamp: cache.timestamp))
+    do {
+      let decoder = JSONDecoder()
+      let cache = try decoder.decode(Cache.self, from: data)
+      completion(.found(feed: cache.feed, timestamp: cache.timestamp))
+    }
+    catch {
+      completion(.failure(error: error))
+    }
   }
   
   func insert(_ items: [LocalFeedImage], timestamp: Date, completion: @escaping FeedStore.InsertionCompletion) {
@@ -40,14 +50,14 @@ class CodableFeedStoreTests: XCTestCase {
   override func setUp() {
     super.setUp()
     
-    let storeURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent("image-feed.store")
+    let storeURL = testSpecificStoreURL()
     try? FileManager.default.removeItem(at: storeURL)
   }
   
   override func tearDown() {
     super.tearDown()
     
-    let storeURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent("image-feed.store")
+    let storeURL = testSpecificStoreURL()
     try? FileManager.default.removeItem(at: storeURL)
   }
   
@@ -80,11 +90,22 @@ class CodableFeedStoreTests: XCTestCase {
     expect(sut, toRetrieveTwice: .found(feed: feed, timestamp: timestamp))
   }
   
+  func test_retrieve_deliversFailureOnRetrievalError() {
+    let sut = makeSUT()
+    
+    try! "invalid data".write(to: testSpecificStoreURL(), atomically: true, encoding: .utf8)
+    
+    expect(sut, toRetrieve: .failure(error: anyNSError()))
+  }
   // - MARK: Helpers:
   private func makeSUT(file: StaticString = #file, line: UInt = #line) -> CodableFeedStore {
-    let sut = CodableFeedStore()
+    let sut = CodableFeedStore(storeURL: testSpecificStoreURL())
     trackForMemoryLeaks(sut, file: file, line: line)
     return sut
+  }
+  
+  private func testSpecificStoreURL() -> URL {
+    return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent("image-feed.store")
   }
   
   private func insert(_ cache: (feed: [LocalFeedImage], timestamp: Date), to sut: CodableFeedStore) {
@@ -107,7 +128,8 @@ class CodableFeedStoreTests: XCTestCase {
     
     sut.retrieve { (retrievedREsult) in
       switch (expectedResult, retrievedREsult) {
-      case (.empty, .empty):
+      case (.empty, .empty),
+           (.failure, .failure):
         break
       case let (.found(expected), .found(retrieved)):
         XCTAssertEqual(retrieved.feed, expected.feed, file: file, line: line)
