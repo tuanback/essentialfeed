@@ -52,17 +52,17 @@ class CodableFeedStoreTests: XCTestCase {
   }
   
   func test_retrieve_deliversEmptyOnEmptyCache() {
-    let sut = CodableFeedStore()
+    let sut = makeSUT()
     expect(sut, toRetrieve: .empty)
   }
   
   func test_retrieve_hasNoSideEffectOnEmptyCache() {
-    let sut = CodableFeedStore()
+    let sut = makeSUT()
     expect(sut, toRetrieveTwice: .empty)
   }
   
-  func test_retrieveAfterInsertingToEmptyCache_deliversInsertedValues() {
-    let sut = CodableFeedStore()
+  func test_retrieve_deliversInsertedValuesOnNonEmptyCache() {
+    let sut = makeSUT()
     let feed = uniqueItems().local
     let timestamp = Date()
     insert((feed, timestamp), to: sut)
@@ -71,13 +71,20 @@ class CodableFeedStoreTests: XCTestCase {
   }
   
   func test_retrieve_hasNoSideEffectsOnNonEmptyCache() {
-    let sut = CodableFeedStore()
+    let sut = makeSUT()
     let feed = uniqueItems().local
     let timestamp = Date()
     
     insert((feed, timestamp), to: sut)
     
     expect(sut, toRetrieveTwice: .found(feed: feed, timestamp: timestamp))
+  }
+  
+  // - MARK: Helpers:
+  private func makeSUT(file: StaticString = #file, line: UInt = #line) -> CodableFeedStore {
+    let sut = CodableFeedStore()
+    trackForMemoryLeaks(sut, file: file, line: line)
+    return sut
   }
   
   private func insert(_ cache: (feed: [LocalFeedImage], timestamp: Date), to sut: CodableFeedStore) {
