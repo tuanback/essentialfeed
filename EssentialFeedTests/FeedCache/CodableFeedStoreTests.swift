@@ -65,14 +65,7 @@ class CodableFeedStoreTests: XCTestCase {
     let sut = CodableFeedStore()
     let feed = uniqueItems().local
     let timestamp = Date()
-    let exp = expectation(description: "Wait for cache retrieve completed")
-    
-    
-    sut.insert(feed, timestamp: timestamp) { insertionError in
-      XCTAssertNil(insertionError, "Expected feed to be inserted successfully")
-      exp.fulfill()
-    }
-    wait(for: [exp], timeout: 1.0)
+    insert((feed, timestamp), to: sut)
     
     expect(sut, toRetrieve: .found(feed: feed, timestamp: timestamp))
   }
@@ -81,15 +74,20 @@ class CodableFeedStoreTests: XCTestCase {
     let sut = CodableFeedStore()
     let feed = uniqueItems().local
     let timestamp = Date()
+    
+    insert((feed, timestamp), to: sut)
+    
+    expect(sut, toRetrieveTwice: .found(feed: feed, timestamp: timestamp))
+  }
+  
+  private func insert(_ cache: (feed: [LocalFeedImage], timestamp: Date), to sut: CodableFeedStore) {
     let exp = expectation(description: "Wait for cache retrieve completed")
     
-    sut.insert(feed, timestamp: timestamp) { insertionError in
+    sut.insert(cache.feed, timestamp: cache.timestamp) { insertionError in
       XCTAssertNil(insertionError, "Expected feed to be inserted successfully")
       exp.fulfill()
     }
     wait(for: [exp], timeout: 1.0)
-    
-    expect(sut, toRetrieveTwice: .found(feed: feed, timestamp: timestamp))
   }
   
   private func expect(_ sut: CodableFeedStore, toRetrieveTwice expectedResult: RetrieveCachedFeedResult, file: StaticString = #file, line: UInt = #line) {
