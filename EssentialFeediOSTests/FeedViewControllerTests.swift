@@ -29,6 +29,7 @@ final class FeedViewController: UITableViewController {
   }
   
   @objc private func load() {
+    refreshControl?.beginRefreshing()
     loader?.load { [weak self] _ in
       self?.refreshControl?.endRefreshing()
     }
@@ -38,23 +39,15 @@ final class FeedViewController: UITableViewController {
 
 class FeedViewControllerTests: XCTestCase {
   
-  func test_init_doesNotLoadFeed() {
-    let (_, loader) = makeSUT()
+  func test_loadFeedActions_requestFeedFromLoader() {
+    let (sut, loader) = makeSUT()
     
     XCTAssertEqual(loader.loadCallCount, 0)
-  }
   
-  func test_viewDidLoad_loadsFeed() {
-    let (sut, loader) = makeSUT()
     sut.loadViewIfNeeded()
     
     XCTAssertEqual(loader.loadCallCount, 1)
-  }
   
-  func test_userInitiatedFeedReload_loadsFeed() {
-    let (sut, loader) = makeSUT()
-    sut.loadViewIfNeeded()
-    
     sut.simulateUserInitiatedFeedReload()
     XCTAssertEqual(loader.loadCallCount, 2)
     
@@ -63,36 +56,18 @@ class FeedViewControllerTests: XCTestCase {
   }
   
   func test_viewDidLoad_showsLoadingIndicator() {
-    let (sut, _) = makeSUT()
-    
-    sut.loadViewIfNeeded()
-    
-    XCTAssertEqual(sut.isShowingLoadingIndicator, true)
-  }
-  
-  func test_viewDidLoad_hidesLoadingIndicatorOnLoaderCompletion() {
     let (sut, loader) = makeSUT()
     
     sut.loadViewIfNeeded()
-    loader.completeFeedLoading()
+    XCTAssertEqual(sut.isShowingLoadingIndicator, true)
     
+    loader.completeFeedLoading(at: 0)
     XCTAssertEqual(sut.isShowingLoadingIndicator, false)
-  }
-  
-  func test_userInitiatedFeedReload_showsLoadingIndicator() {
-    let (sut, _) = makeSUT()
     
     sut.simulateUserInitiatedFeedReload()
-    
     XCTAssertEqual(sut.isShowingLoadingIndicator, true)
-  }
-  
-  func test_userInitiatedFeedReload_hidesLoadingIndicatorOnLoaderCompletion() {
-    let (sut, loader) = makeSUT()
     
-    sut.simulateUserInitiatedFeedReload()
-    loader.completeFeedLoading()
-    
+    loader.completeFeedLoading(at: 1)
     XCTAssertEqual(sut.isShowingLoadingIndicator, false)
   }
   
@@ -118,8 +93,8 @@ class FeedViewControllerTests: XCTestCase {
       completions.append(completion)
     }
     
-    func completeFeedLoading() {
-      completions[0](.success([]))
+    func completeFeedLoading(at index: Int) {
+      completions[index](.success([]))
     }
   }
 }
